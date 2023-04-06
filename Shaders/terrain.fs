@@ -58,13 +58,27 @@ uniform vec2 scaleUV;
   
 uniform sampler2D backgroundTexture;
 
+//01/04/2023
+uniform sampler2D rTexture;
+uniform sampler2D bTexture;
+uniform sampler2D gTexture;
+uniform sampler2D blendMapTexture;
+
 vec3 calculateDirectionalLight(Light light, vec3 direction){
 	vec2 tiledCoords = our_uv;
 	if(tiledCoords.x != 0 && tiledCoords.y != 0)
 		tiledCoords = scaleUV * tiledCoords;
 	
-	vec4 backgroundTextureColor = texture(backgroundTexture, tiledCoords);
-	vec4 totalColor = backgroundTextureColor;
+	//vec4 backgroundTextureColor = texture(backgroundTexture, tiledCoords);//linea comentada 01/04/2023
+	//vec4 totalColor = backgroundTextureColor;//linea comentada 01/04/2023
+	//01/04/2023
+	vec4 blendMapColor = texture(blendMapTexture, our_uv);
+	float backgroundColorAmount = 1 - blendMapColor.r - blendMapColor.g - blendMapColor.b;
+	vec4 backgroundColor = texture(backgroundTexture, our_uv) * backgroundColorAmount;
+	vec4 rTextureColor = texture(rTexture, tiledCoords) * blendMapColor.r;
+	vec4 gTextureColor = texture(gTexture, tiledCoords) * blendMapColor.g;
+	vec4 bTextureColor = texture(bTexture, tiledCoords) * blendMapColor.b;
+	vec4 totalColor = backgroundColor + rTextureColor + gTextureColor + bTextureColor;
 
 	// Ambient
     vec3 ambient  = light.ambient * vec3(totalColor);

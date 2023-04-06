@@ -81,7 +81,7 @@ Model modelDartLegoRightLeg;
 // Mayow
 Model mayowModelAnimate;
 // Terrain model instance
-Terrain terrain(-1, -1, 200, 8, "../Textures/heightmap.png");
+Terrain terrain(-1, -1, 50, 50, "../Textures/TerrenoJess.png");//(,, tamaño total del terreno(original: 200), ponderación del terreno(original: 8), imagen que se toma de referencia(original:"../Textures/heightmap.png"))
 
 GLuint textureCespedID, textureWallID, textureWindowID, textureHighwayID, textureLandingPadID;
 GLuint skyboxTextureID;
@@ -94,12 +94,13 @@ GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
 GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
 GL_TEXTURE_CUBE_MAP_NEGATIVE_Z };
 
-std::string fileNames[6] = { "../Textures/mp_bloodvalley/blood-valley_ft.tga",
-		"../Textures/mp_bloodvalley/blood-valley_bk.tga",
-		"../Textures/mp_bloodvalley/blood-valley_up.tga",
-		"../Textures/mp_bloodvalley/blood-valley_dn.tga",
-		"../Textures/mp_bloodvalley/blood-valley_rt.tga",
-		"../Textures/mp_bloodvalley/blood-valley_lf.tga" };
+std::string fileNames[6] = { "../Textures/mp_bloodvalley/blood-valley_ft.tga",//frontal
+		"../Textures/mp_bloodvalley/blood-valley_bk.tga",//back
+		"../Textures/mp_bloodvalley/blood-valley_up.tga",//up
+		"../Textures/mp_bloodvalley/blood-valley_dn.tga",//down
+		"../Textures/mp_bloodvalley/blood-valley_rt.tga",//right
+		"../Textures/mp_bloodvalley/blood-valley_lf.tga" };//left
+
 
 bool exitApp = false;
 int lastMousePosX, offsetX = 0;
@@ -670,6 +671,17 @@ bool processInput(bool continueApplication) {
 	else if (modelSelected == 2 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
 		modelMatrixDart = glm::translate(modelMatrixDart, glm::vec3(0.02, 0.0, 0.0));
 
+	if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+		modelMatrixMayow = glm::rotate(modelMatrixMayow, 0.02f, glm::vec3(0, 1, 0));
+	else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+		modelMatrixMayow = glm::rotate(modelMatrixMayow, -0.02f, glm::vec3(0, 1, 0));
+	if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+		modelMatrixMayow = glm::translate(modelMatrixMayow, glm::vec3(0.0, 0.0, 0.02));
+	else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+		modelMatrixMayow = glm::translate(modelMatrixMayow, glm::vec3(0.0, 0.0, -0.02));
+
+
+
 	glfwPollEvents();
 	return continueApplication;
 }
@@ -761,7 +773,8 @@ void applicationLoop() {
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureCespedID);
 		shaderMulLighting.setVectorFloat2("scaleUV", glm::value_ptr(glm::vec2(80, 80)));
-		terrain.setPosition(glm::vec3(100, 0, 100));
+		terrain.setPosition(glm::vec3(25, 0, 25));//Posición del terreno, si se modifica la línea 84 a Terrain terrain(-1, -1, 50, 8, "../Textures/heightmap.png"); aquí se modifica a 25,0,25    original: 100,0,100
+		terrain.enableWireMode();
 		terrain.render();
 		shaderMulLighting.setVectorFloat2("scaleUV", glm::value_ptr(glm::vec2(0, 0)));
 		glBindTexture(GL_TEXTURE_2D, 0);
@@ -864,7 +877,15 @@ void applicationLoop() {
 		/*******************************************
 		 * Custom Anim objects obj
 		 *******************************************/
-		modelMatrixMayow[3][1] = terrain.getHeightTerrain(modelMatrixMayow[3][0], modelMatrixMayow[3][2]);
+		//Estas líneas son para que el modelo de May se incline cuando suba las pendientes del terreno
+		modelMatrixMayow[3][1] = terrain.getHeightTerrain(modelMatrixMayow[3][0], modelMatrixMayow[3][2]);//Los modelos no se ajustan al terreno si se comenta esta línea
+		glm::vec3 up = glm::normalize(terrain.getNormalTerrain(modelMatrixMayow[3][0], modelMatrixMayow[3][2]));//[][] significan los ejes del modelo
+		glm::vec3 front = glm::normalize(glm::vec3(modelMatrixMayow[2]));
+		glm::vec3 right = glm::normalize(glm::cross(up, front));//Producto punto entre up y front, aquí son perpendiculares
+		front = glm::normalize(glm::cross(right, up));//Se recalcula front
+		modelMatrixMayow[0] = glm::vec4(right, 0.0);//Se establece
+		modelMatrixMayow[1] = glm::vec4(up, 0.0);
+		modelMatrixMayow[2] = glm::vec4(front, 0.0);
 		glm::mat4 modelMatrixMayowBody = glm::mat4(modelMatrixMayow);
 		modelMatrixMayowBody = glm::scale(modelMatrixMayowBody, glm::vec3(0.021, 0.021, 0.021));
 		mayowModelAnimate.setAnimationIndex(0);
