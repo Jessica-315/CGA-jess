@@ -1087,6 +1087,7 @@ void applicationLoop() {
 		modelMatrixCyborgBody = glm::scale(modelMatrixCyborgBody, glm::vec3(0.01, 0.01, 0.01));
 		cyborgModelAnimate.render(modelMatrixCyborgBody);
 
+
 		cowboyModelAnimate.render(modelMatrixCowboy);
 		guardianModelAnimate.render(modelMatrixGuardian);
 		//cyborgModelAnimate.render(modelMatrixCyborg);
