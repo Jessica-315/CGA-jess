@@ -119,6 +119,11 @@ bool exitApp = false;
 int lastMousePosX, offsetX = 0;
 int lastMousePosY, offsetY = 0;
 
+bool isJump = false;
+double startTimeJump = 0.0;
+double tmv = 0.0;
+float gravity = 1.3;
+
 // Model matrix definitions
 glm::mat4 matrixModelRock = glm::mat4(1.0);
 glm::mat4 modelMatrixHeli = glm::mat4(1.0f);
@@ -792,6 +797,38 @@ bool processInput(bool continueApplication) {
 		return false;
 	}
 
+	if (glfwJoystickPresent(GLFW_JOYSTICK_1) == GLFW_TRUE) {//Regresa si un joy está presente, conectar el control y mapear los movimientos del joy
+		std::cout << "Está conectado el joystick" << std::endl;
+		const char * nombreJoy = glfwGetJoystickName(GLFW_JOYSTICK_1);
+		std::cout << "Nombre del joystick: " << nombreJoy << std::endl;
+		int axisCount = 0, buttomCount = 0;
+		const float * axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axisCount);
+		std::cout << "Existen " << axisCount << " ejes detectados" << std::endl;
+		std::cout << "Axis P " << axes[0] << std::endl;
+		std::cout << "Axis Q " << axes[1] << std::endl;
+		std::cout << "Axis R " << axes[2] << std::endl;//Completar según los valores del control
+		if (fabs(axes[0]) >= 0.3) {
+			modelMatrixMayow = glm::rotate(modelMatrixMayow, -axes[0] * 0.05f, glm::vec3(0, 1, 0));
+			animationIndex = 0;
+		}
+		if (fabs(axes[1]) >= 0.3f) {
+			modelMatrixMayow = glm::translate(modelMatrixMayow, glm::vec3(0, 0, -axes[1] * 0.1));
+			animationIndex = 0;
+		}
+		if (fabs(axes[2]) >= 0.3f) {
+			camera->mouseMoveCamera(axes[2], 0, deltaTime);
+		}
+		if (fabs(axes[3]) >= 0.3f) {
+			camera->mouseMoveCamera(0, axes[3], deltaTime);
+		}
+		const unsigned char * buttoms = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &buttomCount);
+		if (buttoms[0] == GLFW_PRESS && !isJump) {
+			tmv = 0;
+			startTimeJump = currTime;
+			isJump = true;
+		}
+	}
+
 	if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
 		camera->mouseMoveCamera(offsetX, 0.0, deltaTime);
 	if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
@@ -901,6 +938,13 @@ bool processInput(bool continueApplication) {
 	}else if (modelSelected == 2 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS){
 		modelMatrixMayow = glm::translate(modelMatrixMayow, glm::vec3(0, 0, -0.02));
 		animationIndex = 0;
+	}
+
+	bool stateSpace = glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS;
+	if (!isJump && stateSpace) {
+		isJump = true;
+		startTimeJump = currTime;
+		tmv = 0;
 	}
 
 	glfwPollEvents();
@@ -1244,7 +1288,12 @@ void applicationLoop() {
 		/*******************************************
 		 * Custom Anim objects obj
 		 *******************************************/
-		modelMatrixMayow[3][1] = terrain.getHeightTerrain(modelMatrixMayow[3][0], modelMatrixMayow[3][2]);
+		modelMatrixMayow[3][1] = -gravity * tmv * tmv + 3.0 * tmv + terrain.getHeightTerrain(modelMatrixMayow[3][0], modelMatrixMayow[3][2]);//tmv es la parte lineal
+		tmv = currTime - startTimeJump;
+		if (modelMatrixMayow[3][1] < terrain.getHeightTerrain(modelMatrixMayow[3][0], modelMatrixMayow[3][2])) {
+			isJump = false;
+			modelMatrixMayow[3][1] = terrain.getHeightTerrain(modelMatrixMayow[3][0], modelMatrixMayow[3][2]);
+		}
 		glm::mat4 modelMatrixMayowBody = glm::mat4(modelMatrixMayow);
 		modelMatrixMayowBody = glm::scale(modelMatrixMayowBody, glm::vec3(0.021, 0.021, 0.021));
 		mayowModelAnimate.setAnimationIndex(animationIndex);
