@@ -55,7 +55,10 @@ Shader shaderMulLighting;
 Shader shaderTerrain;
 
 std::shared_ptr<Camera> camera(new ThirdPersonCamera());
-//std::shared_ptr<FirstPersonCamera> camera(new FirstPersonCamera());
+std::shared_ptr<FirstPersonCamera> FPcamera(new FirstPersonCamera());
+std::shared_ptr<Camera> TPcamera(new ThirdPersonCamera());
+
+bool cameraSwitch = false;
 
 
 Sphere skyboxSphere(20, 20);
@@ -89,6 +92,8 @@ Model modelLampPost2;
 // Model animate instance
 // Mayow
 Model mayowModelAnimate;
+// MrKrabs model instance
+Model mrKrabsModelAnimate;
 // Terrain model instance
 Terrain terrain(-1, -1, 200, 8, "../Textures/heightmap.png");
 
@@ -122,6 +127,7 @@ glm::mat4 modelMatrixLambo = glm::mat4(1.0);
 glm::mat4 modelMatrixAircraft = glm::mat4(1.0);
 glm::mat4 modelMatrixDart = glm::mat4(1.0f);
 glm::mat4 modelMatrixMayow = glm::mat4(1.0f);
+glm::mat4 modelMatrixMrKrabs = glm::mat4(1.0f);
 
 float rotDartHead = 0.0, rotDartLeftArm = 0.0, rotDartLeftHand = 0.0, rotDartRightArm = 0.0, rotDartRightHand = 0.0, rotDartLeftLeg = 0.0, rotDartRightLeg = 0.0;
 int modelSelected = 2;
@@ -149,6 +155,9 @@ int numPasosDart = 0;
 
 // Var animate helicopter
 float rotHelHelY = 0.0;
+
+//Variable para cambiar la animación de MrKrabs
+int cMrkrabs = 2;
 
 // Var animate lambo dor
 int stateDoor = 0;
@@ -307,7 +316,13 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	mayowModelAnimate.loadModel("../models/mayow/personaje2.fbx");
 	mayowModelAnimate.setShader(&shaderMulLighting);
 
-	//camera->setPosition(glm::vec3(0.0, 0.0, 10.0));
+	//Mr Krabs
+	mrKrabsModelAnimate.loadModel("../models/MrKrabs/DonK-TEST.fbx");
+	mrKrabsModelAnimate.setShader(&shaderMulLighting);
+
+	/*cameraF->setPosition(glm::vec3(0.0, 0.0, 10.0));
+	cameraF->setSensitivity(1.0f);*/
+	FPcamera->setSensitivity(1.0f);
 	camera->setSensitivity(1.0f);
 	camera->setDistanceFromTarget(distanceFromTarget);
 
@@ -706,6 +721,7 @@ void destroy() {
 
 	// Custom objects animate
 	mayowModelAnimate.destroy();
+	mrKrabsModelAnimate.destroy();
 
 	// Textures Delete
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -797,7 +813,7 @@ bool processInput(bool continueApplication) {
 	if (enableCountSelected && glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS){
 		enableCountSelected = false;
 		modelSelected++;
-		if(modelSelected > 2)
+		if(modelSelected > 3)
 			modelSelected = 0;
 		if(modelSelected == 1)
 			fileName = "../animaciones/animation_dart_joints.txt";
@@ -894,6 +910,36 @@ bool processInput(bool continueApplication) {
 		modelMatrixMayow = glm::translate(modelMatrixMayow, glm::vec3(0, 0, -0.02));
 	}
 
+	cMrkrabs = 2; //Controlamos la animacion de Don Cangrejo al desplazarse
+	if (modelSelected == 3 && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+		modelMatrixMrKrabs = glm::rotate(modelMatrixMrKrabs, -0.02f, glm::vec3(0, 1, 0));
+	else if (modelSelected == 3 && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+		modelMatrixMrKrabs = glm::rotate(modelMatrixMrKrabs, 0.02f, glm::vec3(0, 1, 0));
+	if (modelSelected == 3 && glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+	{
+		cMrkrabs = 1;
+		modelMatrixMrKrabs = glm::translate(modelMatrixMrKrabs, glm::vec3(0.0, 0.0, 0.02));
+	}
+	else if (modelSelected == 3 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+	{
+		cMrkrabs = 1;
+		modelMatrixMrKrabs = glm::translate(modelMatrixMrKrabs, glm::vec3(0.0, 0.0, -0.02));
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS
+		&& glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS) {
+		cameraSwitch = !cameraSwitch;
+	}
+
+	if (cameraSwitch) {
+		camera = FPcamera;
+	}
+	else {
+		camera = TPcamera;
+		camera->setSensitivity(1.0f);
+		camera->setDistanceFromTarget(distanceFromTarget);
+	}
+
 	glfwPollEvents();
 	return continueApplication;
 }
@@ -905,6 +951,7 @@ void applicationLoop() {
 	glm::vec3 target;
 	glm::vec3 axisTarget;
 	float angleTarget;
+	glm::vec3 targetFP;
 
 	matrixModelRock = glm::translate(matrixModelRock, glm::vec3(-3.0, 0.0, 2.0));
 
@@ -949,11 +996,19 @@ void applicationLoop() {
 			axisTarget = glm::axis(glm::quat_cast(modelMatrixDart));
 			angleTarget = glm::angle(glm::quat_cast(modelMatrixDart));
 			target = modelMatrixDart[3];
+			targetFP = target + glm::vec3(0.0f, 1.5f, 0.0f); //Esta línea es para que la altura de la cámara coincida con la del modelo
+		}
+		else if (modelSelected == 3) {
+			axisTarget = glm::axis(glm::quat_cast(modelMatrixMrKrabs));
+			angleTarget = glm::angle(glm::quat_cast(modelMatrixMrKrabs));
+			target = modelMatrixMrKrabs[3];
+			targetFP = target + glm::vec3(0.0f, 0.5f, 0.0f); //Esta línea es para que la altura de la cámara coincida con la del modelo
 		}
 		else {
 			axisTarget = glm::axis(glm::quat_cast(modelMatrixMayow));
 			angleTarget = glm::angle(glm::quat_cast(modelMatrixMayow));
 			target = modelMatrixMayow[3];
+			targetFP = target + glm::vec3(0.0f, 2.5f, 0.0f); //Esta línea es para que la altura de la cámara coincida con la del modelo
 		}
 		if (std::isnan(angleTarget))
 			angleTarget = 0.0f;
@@ -961,9 +1016,20 @@ void applicationLoop() {
 			angleTarget = -angleTarget;
 		if (modelSelected == 1)
 			angleTarget -= glm::radians(90.0);
-		camera->setAngleTarget(angleTarget);
+		/*camera->setAngleTarget(angleTarget);
 		camera->setCameraTarget(target);
-		camera->updateCamera();
+		camera->updateCamera();*/
+		if (cameraSwitch) {
+			FPcamera->setCameraTarget(target);
+			FPcamera->setPosition(targetFP);
+			FPcamera->moveFrontCamera(true, 0.5f);
+			FPcamera->updateCamera();
+		}
+		else {
+			camera->setAngleTarget(angleTarget);
+			camera->setCameraTarget(target);
+			camera->updateCamera();
+		}
 		view = camera->getViewMatrix();
 
 		// Settea la matriz de vista y projection al shader con solo color
@@ -1227,6 +1293,21 @@ void applicationLoop() {
 		glm::mat4 modelMatrixMayowBody = glm::mat4(modelMatrixMayow);
 		modelMatrixMayowBody = glm::scale(modelMatrixMayowBody, glm::vec3(0.021, 0.021, 0.021));
 		mayowModelAnimate.render(modelMatrixMayowBody);
+
+		//Estas líneas son para que el modelo de Don cangrejo se incline cuando suba las pendientes del terreno
+		//Para acceder a la posicion de la matriz del modelo, selecccionamos la columna 3.
+		modelMatrixMrKrabs[3][1] = terrain.getHeightTerrain(modelMatrixMrKrabs[3][0], modelMatrixMrKrabs[3][2]);
+		glm::vec3 up = glm::normalize(terrain.getNormalTerrain(modelMatrixMrKrabs[3][0], modelMatrixMrKrabs[3][2]));
+		glm::vec3 front = glm::normalize(glm::vec3(modelMatrixMrKrabs[2]));
+		glm::vec3 right = glm::normalize(glm::cross(up, front));
+		front = glm::normalize(glm::cross(right, up));
+		modelMatrixMrKrabs[0] = glm::vec4(right, 0.0);
+		modelMatrixMrKrabs[1] = glm::vec4(up, 0.0);
+		modelMatrixMrKrabs[2] = glm::vec4(front, 0.0);
+		glm::mat4 modelMatrixMrKrabsBody = glm::mat4(modelMatrixMrKrabs);
+		modelMatrixMrKrabsBody = glm::scale(modelMatrixMrKrabsBody, glm::vec3(0.0005, 0.0005, 0.0005));
+		mrKrabsModelAnimate.setAnimationIndex(cMrkrabs);  //Variable que determina que animacion se ejecuta de MrKrabs.
+		mrKrabsModelAnimate.render(modelMatrixMrKrabsBody);
 
 		/*******************************************
 		 * Skybox
