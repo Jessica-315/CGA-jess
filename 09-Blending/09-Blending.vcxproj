@@ -77,8 +77,8 @@
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86;..\external\glew\lib\;..\external\glfw\lib;..\external\FreeImage\lib;..\external\assimp\lib;../external/OpenAL/lib;..\external\freealut\lib;../Debug</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\external\glm;..\external\glew\include;..\external\glfw\include;..\external\FreeImage\include;..\external\assimp\include;..\external\OpenAL/include;..\external\freealut\include;..\CGALib\include</IncludePath>
-    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86;..\external\glew\lib\;..\external\glfw\lib;..\external\FreeImage\lib;..\external\assimp\lib;../external/OpenAL/lib;..\external\freealut\lib;../Release</LibraryPath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\external\glm;..\external\glew\include;..\external\glfw\include;..\external\FreeImage\include;..\external\assimp\include;..\external\OpenAL/include;..\external\freealut\include;..\CGALib\include;..\external\Freetype\include</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86;..\external\glew\lib\;..\external\glfw\lib;..\external\FreeImage\lib;..\external\assimp\lib;../external/OpenAL/lib;..\external\freealut\lib;../Release;..\external\Freetype\lib</LibraryPath>
     <ExecutablePath>$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

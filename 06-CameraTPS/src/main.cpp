@@ -1004,6 +1004,13 @@ void applicationLoop() {
 			target = modelMatrixMrKrabs[3];
 			targetFP = target + glm::vec3(0.0f, 0.5f, 0.0f); //Esta línea es para que la altura de la cámara coincida con la del modelo
 		}
+		else if (modelSelected == 2) {
+			axisTarget = glm::axis(glm::quat_cast(modelMatrixMayow));
+			axisTarget.x = 0;
+			angleTarget = glm::angle(glm::quat_cast(modelMatrixMayow));
+			target = modelMatrixMayow[3];
+			targetFP = target + glm::vec3(0.0f, 2.5f, 0.0f); //Esta línea es para que la altura de la cámara coincida con la del modelo
+		}
 		else {
 			axisTarget = glm::axis(glm::quat_cast(modelMatrixMayow));
 			angleTarget = glm::angle(glm::quat_cast(modelMatrixMayow));
