@@ -214,5 +214,11 @@
     <None Include="..\Shaders\particlesSmoke.vs">
       <Filter>Archivos de recursos</Filter>
     </None>
+    <None Include="..\Shaders\particlesLluvia.fs">
+      <Filter>Archivos de recursos</Filter>
+    </None>
+    <None Include="..\Shaders\particlesLluvia.vs">
+      <Filter>Archivos de recursos</Filter>
+    </None>
   </ItemGroup>
 </Project>

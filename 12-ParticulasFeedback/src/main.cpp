@@ -208,12 +208,12 @@ double currTimeParticlesAnimation, lastTimeParticlesAnimation;
 // Definition for the particle system fire
 GLuint initVelFire, startTimeFire;
 GLuint VAOParticlesFire;
-GLuint nParticlesFire = 2000;
+GLuint nParticlesFire = 3000;//2000
 GLuint posBuf[2], velBuf[2], age[2];//Se gasta mas memoria pero se aprovecha el procesamiento
 GLuint particleArray[2];
 GLuint feedback[2];
 GLuint drawBuf = 1;
-float particleSize = 0.4, particleLifetime = 6.0;//Tamaño de la particula y tiempo de vida
+float particleSize = 0.4, particleLifetime = 2.0;//Tamaño de la particula y tiempo de vida
 double currTimeParticlesAnimationFire, lastTimeParticlesAnimationFire;
 
 // Colliders
@@ -445,7 +445,8 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	shaderTerrain.initialize("../Shaders/terrain_fog.vs", "../Shaders/terrain_fog.fs");
 	shaderParticlesFountain.initialize("../Shaders/particlesFountain.vs", "../Shaders/particlesFountain.fs");
 	//shaderParticlesFire.initialize("../Shaders/particlesFire.vs", "../Shaders/particlesFire.fs", {"Position", "Velocity", "Age"});//Recibe las variables que se estarán retroalimentando
-	shaderParticlesFire.initialize("../Shaders/particlesSmoke.vs", "../Shaders/particlesSmoke.fs", { "Position", "Velocity", "Age" });
+	//shaderParticlesFire.initialize("../Shaders/particlesSmoke.vs", "../Shaders/particlesSmoke.fs", { "Position", "Velocity", "Age" });
+	shaderParticlesFire.initialize("../Shaders/particlesLluvia.vs", "../Shaders/particlesLluvia.fs", { "Position", "Velocity", "Age" });
 
 	// Inicializacion de los objetos.
 	skyboxSphere.init();
@@ -905,7 +906,8 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	textureParticlesFountain.freeImage(bitmap);
 
 	//Texture textureParticleFire("../Textures/fire.png");
-	Texture textureParticleFire("../Textures/smoke.png");
+	//Texture textureParticleFire("../Textures/smoke.png");
+	Texture textureParticleFire("../Textures/bluewater.png");
 	bitmap = textureParticleFire.loadImage();
 	data = textureParticleFire.convertToData(bitmap, imageWidth, imageHeight);
 	glGenTextures(1, &textureParticleFireID);
@@ -947,8 +949,8 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	shaderParticlesFire.setInt("RandomTex", 1);
 	shaderParticlesFire.setFloat("ParticleLifetime", particleLifetime);
 	shaderParticlesFire.setFloat("ParticleSize", particleSize);
-	shaderParticlesFire.setVectorFloat3("Accel", glm::value_ptr(glm::vec3(0.0f,0.1f,0.0f)));//Aceleración
-	shaderParticlesFire.setVectorFloat3("Emitter", glm::value_ptr(glm::vec3(0.0f)));
+	shaderParticlesFire.setVectorFloat3("Accel", glm::value_ptr(glm::vec3(0.0f,-15.8f,0.0f)));//Aceleración, si es negativa las partículas van hacia abajo
+	shaderParticlesFire.setVectorFloat3("Emitter", glm::value_ptr(glm::vec3(0.0f, 10.0f, 0.0f)));
 
 	glm::mat3 basis;
 	glm::vec3 u, v, n;
@@ -1733,7 +1735,7 @@ void applicationLoop() {
 
 				shaderParticlesFire.turnOn();
 				//shaderParticlesFire.setVectorFloat3("colorFuego", glm::value_ptr(glm::vec3(0.0, 1.0, 0.0)));//Color que tomarán las partículas cuando su tiempo de vida de vaya terminando
-				shaderParticlesFire.setVectorFloat3("colorFuego", glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));//Color que tomarán las partículas cuando su tiempo de vida de vaya terminando
+				shaderParticlesFire.setVectorFloat3("colorFuego", glm::value_ptr(glm::vec3(1.0, 1.0, 1.0)));//Color que tomarán las partículas cuando su tiempo de vida de vaya terminando
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, textureParticleFireID);
 				glDepthMask(GL_FALSE);

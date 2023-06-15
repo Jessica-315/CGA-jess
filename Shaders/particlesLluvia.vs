@@ -30,13 +30,14 @@ uniform mat4 view;
 uniform mat4 projection;
 
 vec3 randomInitialVelocity() {
-    float velocity = mix(0.1, 0.5, texelFetch(RandomTex, 2 * gl_VertexID, 0).r );//Altura
+    float velocity = mix(0.0, 10.0, texelFetch(RandomTex, 2 * gl_VertexID, 0).r );//Altura
     return EmitterBasis * vec3(0, velocity, 0);
 }
 
 vec3 randomInitialPosition() {
-    float offset = mix(-0.5, 0.5, texelFetch(RandomTex, 2 * gl_VertexID + 1, 0).r);//Tamanio del fuego en la base
-    return Emitter + vec3(offset, 0, 0);
+    float offsetX = mix(-50.0, 50.0, texelFetch(RandomTex, 2 * gl_VertexID, 0).r);//Tamanio del fuego en la base
+    float offsetZ = mix(-50.0, 50.0, texelFetch(RandomTex, 2 * gl_VertexID + 1, 0).r);
+	return Emitter + vec3(offsetX, 0, offsetZ);//Se va a distribuir en forma de cuadrado
 }
 
 // Offsets to the position in camera coordinates for each vertex of the particle's quad
